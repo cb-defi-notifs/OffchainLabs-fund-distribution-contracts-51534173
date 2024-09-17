@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: UNLICENSED
+// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.16;
 
 // import "./src/RewardDistributor.sol";
@@ -41,7 +41,7 @@ contract RewardDistributorTest is Test {
         return recps;
     }
 
-    function makeRecipientWeights(uint256 count) private returns (uint256[] memory) {
+    function makeRecipientWeights(uint256 count) private pure returns (uint256[] memory) {
         uint256[] memory weig = new uint256[](count);
         if (count == 0) {
             return weig;
@@ -55,6 +55,12 @@ contract RewardDistributorTest is Test {
     }
 
     function testConstructor() public withContext(3) {
+        vm.expectEmit(true, true, false, false);
+        emit OwnershipTransferred(zero, owner);
+        vm.expectEmit(true, true, false, false);
+        emit RecipientsUpdated(
+            keccak256(abi.encodePacked(recipients)), recipients, keccak256(abi.encodePacked(weights)), weights
+        );
         RewardDistributor rd = new RewardDistributor(recipients, weights);
 
         assertEq(rd.currentRecipientGroup(), keccak256(abi.encodePacked(recipients)));
@@ -176,12 +182,6 @@ contract RewardDistributorTest is Test {
         // see testLowSend
         vm.assume(reward >= BASIS_POINTS);
 
-        vm.expectEmit(true, true, false, false);
-        emit OwnershipTransferred(zero, owner);
-        vm.expectEmit(true, true, false, false);
-        emit RecipientsUpdated(
-            keccak256(abi.encodePacked(recipients)), recipients, keccak256(abi.encodePacked(weights)), weights
-        );
         RewardDistributor rd = new RewardDistributor(recipients, weights);
 
         // increase the balance of rd
@@ -398,7 +398,7 @@ contract RewardDistributorTest is Test {
         assertEq(actual, expected, "incorrect max recipients hash");
     }
 
-    function testUncheckedInc() public {
+    function testUncheckedInc() pure public {
         uint256 expected;
         uint256 actual;
 
